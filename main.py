@@ -3,8 +3,9 @@ import numpy as np
 import pandas as pd
 
 Q_15_COLUMNS = slice(30, 39)
-CATEGORIAL_COLUMN_LABLE = '12.takes care of pd patients'
-raw_data = pd.read_excel(r'C:\Users\Idan\Shira survey\data_headers_update.xlsx')
+Q_13_COLUMNS = slice(17, 29)
+CATEGORIAL_COLUMN_LABLE = '12. Do you routinely treat PD patients '
+raw_data = pd.read_excel(r'C:\Users\Idan\Shira survey\Data_headers_update_28_04_2022.xlsx')
 
 
 def process_4and5_votes(data: pd.DataFrame):
@@ -47,7 +48,7 @@ def group_interest_data_frame_by_indicator_column(dataframe: pd.DataFrame,
 categorial_column = raw_data[CATEGORIAL_COLUMN_LABLE]
 question_data_grouped_by_some_categorial_column = group_interest_data_frame_by_indicator_column(raw_data,
                                                                                                 categorial_column,
-                                                                                                Q_15_COLUMNS)
+                                                                                                Q_13_COLUMNS)
 
 result_dict = {}
 for key, item in question_data_grouped_by_some_categorial_column:
@@ -58,15 +59,15 @@ for key, item in question_data_grouped_by_some_categorial_column:
 # ----------------------------------------------------------------------------------------------------------------------
 width = 0.3
 category_counter = 0
-for category, data in result_dict.items():
-    plt.bar(np.arange(len(data)) + width * category_counter, data, width=width)
-    category_counter += 1
+# for category, data in result_dict.items():
+#     plt.bar(np.arange(len(data)) + width * category_counter, data, width=width)
+#     category_counter += 1
 # TODO:  Maybe ask for a user lables and titles?
 plt.ylabel('rates of 4/5 answer')
 plt.title('rates of 4/5 answer for has or doesn\'t have pd patients')
-labels = raw_data.columns.tolist()[Q_15_COLUMNS]
-xticks = np.arange(len(labels))
-plt.xticks(xticks, labels, color='orange', rotation=45, fontweight='bold',
+xlabels = raw_data.columns.tolist()[Q_13_COLUMNS]
+xticks = np.arange(len(xlabels))
+plt.xticks(xticks, xlabels, color='orange', rotation=45, fontweight='bold',
                  fontsize='10', horizontalalignment='right')
 plt.tight_layout()
 
@@ -76,8 +77,20 @@ labels = list(colors.keys())
 handles = [plt.Rectangle((0,0),1,1, color=colors[label]) for label in labels]
 plt.legend(handles, labels)
 
-#plt.savefig(r"C:\Users\Idan\Shira survey\q_15_important_factors.pdf")
+# Outputs:
+#plt.show() # For debug
+plt.savefig(r"C:\Users\Idan\Shira survey\q_13_wrt_have_pd_patients.pdf")
+
+result_dict["Yes"] = result_dict.pop("כן")
+result_dict["No"] = result_dict.pop("לא")
+result_table = pd.DataFrame(result_dict, index=xlabels)
+result_table.plot.barh()
 plt.show()
+
+to_output = result_table.transpose(copy=True)
+to_output.set_axis(xlabels, axis=1, inplace=True)
+to_output.to_csv(r"C:\Users\Idan\Shira survey\q_13_wrt_have_pd_patients.csv")
+
 
 
 
