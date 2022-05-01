@@ -2,10 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from publisher import Publisher
+
 Q_15_COLUMNS = slice(30, 39)
 Q_13_COLUMNS = slice(17, 29)
 CATEGORIAL_COLUMN_LABLE = '12. Do you routinely treat PD patients '
-raw_data = pd.read_excel(r'C:\Users\Idan\Shira survey\Data_headers_update_28_04_2022.xlsx')
+raw_data = pd.read_excel(r'C:\Users\Idan\Shira_survey\Data_headers_update_28_04_2022.xlsx')
 
 
 def process_4and5_votes(data: pd.DataFrame):
@@ -45,15 +47,49 @@ def group_interest_data_frame_by_indicator_column(dataframe: pd.DataFrame,
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-categorial_column = raw_data[CATEGORIAL_COLUMN_LABLE]
-question_data_grouped_by_some_categorial_column = group_interest_data_frame_by_indicator_column(raw_data,
-                                                                                                categorial_column,
-                                                                                                Q_13_COLUMNS)
+#categorial_column = raw_data[CATEGORIAL_COLUMN_LABLE]
+#question_data_grouped_by_some_categorial_column = group_interest_data_frame_by_indicator_column(raw_data,
+#                                                                                                categorial_column,
+#                                                                                                Q_13_COLUMNS)
+#result_dict = {}
+#for key, item in question_data_grouped_by_some_categorial_column:
+#    temp_df_item = item.drop(labels=[CATEGORIAL_COLUMN_LABLE], axis=1).reset_index().drop(labels='index', axis=1)
+#    result_dict[key] = process_4and5_votes(temp_df_item)
 
-result_dict = {}
-for key, item in question_data_grouped_by_some_categorial_column:
-    temp_df_item = item.drop(labels=[CATEGORIAL_COLUMN_LABLE], axis=1).reset_index().drop(labels='index', axis=1)
-    result_dict[key] = process_4and5_votes(temp_df_item)
+
+def process_question_with_no_categorial(raw_data, question_columns: slice, break_long_descriptors_section):
+    question_of_interest_columns = list(raw_data.columns[question_columns])
+    q_15 = raw_data[question_of_interest_columns]
+    modified_index = question_of_interest_columns
+
+    # Calculate rates:
+    rates_for_q15 = [float(format(rate, ".2f"))*100 for rate in process_4and5_votes(q_15)]
+
+    # U can insert all descriptors modifications here:
+    if break_long_descriptors_section:
+        # For better printing results, add \n for long descriptor:
+        modified_index[4] = "15e. Fear that their chance of getting a transplant\n is reduced by being on PD"
+
+    q15_df = pd.DataFrame(rates_for_q15, index=modified_index)
+    return q15_df
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, True)
+q13_processed = process_question_with_no_categorial(raw_data, Q_13_COLUMNS, False)
+
+pub15 = Publisher(q15_processed,
+                True,
+                "plot_q15_no_wrt.pdf",
+                "csv_q15_no_wrt.csv")
+pub15.publish()
+
+pub13 = Publisher(q13_processed,
+                True,
+                "plot_q13_no_wrt.pdf",
+                "csv_q13_no_wrt.csv")
+
+pub13.publish()
 
 # Display:
 # ----------------------------------------------------------------------------------------------------------------------
@@ -79,7 +115,7 @@ plt.legend(handles, labels)
 
 # Outputs:
 #plt.show() # For debug
-plt.savefig(r"C:\Users\Idan\Shira survey\q_13_wrt_have_pd_patients.pdf")
+plt.savefig(r"C:\Users\Idan\Shira_survey\q_13_wrt_have_pd_patients.pdf")
 
 result_dict["Yes"] = result_dict.pop("כן")
 result_dict["No"] = result_dict.pop("לא")
@@ -95,24 +131,4 @@ to_output.to_csv(r"C:\Users\Idan\Shira survey\q_13_wrt_have_pd_patients.csv")
 
 
 
-#print(f"type: {type(gby_yes)}\nthe df:\n{gby_yes}")
-
-
-
-
-#sum_grouped_by = data_grpby_has_pd_patients.apply(lambda x: x.sum())
-#print(sum_grouped_by)
-
-
-
-#test for q15:
-#--------------------------------------------------------------------------------
-# q_15_keys = raw_data.columns.tolist()[30:39]
-# data_pair = process_and_print_highest_rates(raw_data,q_15_keys)
-# plot_results_of_4_5_rates(labels=data_pair[0], rates=data_pair[1], q_number=15)
-
-
-#test for q13
-#q_13_keys = data.columns.tolist()[17:29]
-#data_pair = process_and_print_highest_rates(q_13_keys)
-#plot_results_of_4_5_rates(labels=data_pair[0], rates=data_pair[1], q_number=13)
+#
