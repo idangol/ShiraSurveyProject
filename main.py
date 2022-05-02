@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from column_alternator import ColumnAlternator
+from publisher import Publisher
 
 Q_15_COLUMNS = slice(30, 39)
 Q_13_COLUMNS = slice(17, 29)
@@ -104,7 +105,14 @@ def process_question_with_categorial(raw_data, question_columns: slice, categori
 # Process Q13 and Q15 with categorials
 # ----------------------------------------------------------------------------------------------------------------------
 result_dict = process_question_with_categorial(raw_data, Q_13_COLUMNS, CATEGORIAL_COLUMN_LABEL_VINTAGE, ALTERNATION_DICT_VINTAGE)
+pub13_wrt_vintage = Publisher(result_dict,
+                              False,
+                              "q13_wrt_vintage_plot.pdf",
+                              "q13_wrt_vintage.csv",
+                              list(raw_data.columns[Q_13_COLUMNS]),
+                              CATEGORIAL_COLUMN_LABEL_VINTAGE)
 
+pub13_wrt_vintage.publish_wrt_categorial()
 
 
 # Processing Q15 and Q13 only (can be un-comma if wants to go again)
