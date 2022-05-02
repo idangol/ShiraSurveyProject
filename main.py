@@ -2,11 +2,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from publisher import Publisher
+from column_alternator import ColumnAlternator
 
 Q_15_COLUMNS = slice(30, 39)
 Q_13_COLUMNS = slice(17, 29)
-CATEGORIAL_COLUMN_LABLE = '12. Do you routinely treat PD patients '
+CATEGORIAL_COLUMN_LABEL = '12. Do you routinely treat PD patients '
+CATEGORIAL_COLUMN_LABEL_VINTAGE = "3.vintage"
+ALTERNATION_DICT_VINTAGE = {"מעל 15 שנים": "More then 15 years",
+                            "1-5 שנים": "Less then 15 years",
+                            "11-15 שנים": "Less then 15 years",
+                            "6-10 שנים": "Less then 15 years",
+                            }
 raw_data = pd.read_excel(r'C:\Users\Idan\Shira_survey\Data_headers_update_28_04_2022.xlsx')
 
 
@@ -59,37 +65,65 @@ def group_interest_data_frame_by_indicator_column(dataframe: pd.DataFrame,
 
 def process_question_with_no_categorial(raw_data, question_columns: slice, break_long_descriptors_section):
     question_of_interest_columns = list(raw_data.columns[question_columns])
-    q_15 = raw_data[question_of_interest_columns]
+    question_of_interest_df = raw_data[question_of_interest_columns]
     modified_index = question_of_interest_columns
 
     # Calculate rates:
-    rates_for_q15 = [float(format(rate, ".2f"))*100 for rate in process_4and5_votes(q_15)]
+    rates_for_requested_question = [float(format(rate, ".2f"))*100 for rate in process_4and5_votes(question_of_interest_df)]
 
     # U can insert all descriptors modifications here:
     if break_long_descriptors_section:
         # For better printing results, add \n for long descriptor:
         modified_index[4] = "15e. Fear that their chance of getting a transplant\n is reduced by being on PD"
 
-    q15_df = pd.DataFrame(rates_for_q15, index=modified_index)
+    q15_df = pd.DataFrame(rates_for_requested_question, index=modified_index)
     return q15_df
 
 
+def process_question_with_categorial(raw_data, question_columns: slice, categorial_column_name: str, alternation_dict):
+    # Alternate the requested column by shira's pre-given condition (see word doc)
+    alternator = ColumnAlternator(raw_data, categorial_column_name, alternation_dict)
+    alternator.alternate_df()
+
+    # slice and prepare the requested column
+    question_of_interest_columns = list(raw_data.columns[question_columns])
+    question_of_interest_columns.append(categorial_column_name)
+    question_of_interest_df = raw_data[question_of_interest_columns]
+
+    # groupby the categorial column name (remember to deal with NA s)
+    groupby_object = question_of_interest_df.groupby(by="3.vintage")
+    result_dict = {}
+    for key, item in groupby_object:
+        temp_df_item = item.drop(labels=[categorial_column_name], axis=1).reset_index().drop(labels='index',                                                                                           axis=1)
+        result_dict[key] = process_4and5_votes(temp_df_item)
+
+    return result_dict
+
+
+
+# Process Q13 and Q15 with categorials
 # ----------------------------------------------------------------------------------------------------------------------
-q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, True)
-q13_processed = process_question_with_no_categorial(raw_data, Q_13_COLUMNS, False)
+result_dict = process_question_with_categorial(raw_data, Q_13_COLUMNS, CATEGORIAL_COLUMN_LABEL_VINTAGE, ALTERNATION_DICT_VINTAGE)
 
-pub15 = Publisher(q15_processed,
-                True,
-                "plot_q15_no_wrt.pdf",
-                "csv_q15_no_wrt.csv")
-pub15.publish()
 
-pub13 = Publisher(q13_processed,
-                True,
-                "plot_q13_no_wrt.pdf",
-                "csv_q13_no_wrt.csv")
 
-pub13.publish()
+# Processing Q15 and Q13 only (can be un-comma if wants to go again)
+# ----------------------------------------------------------------------------------------------------------------------
+# q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, True)
+# q13_processed = process_question_with_no_categorial(raw_data, Q_13_COLUMNS, False)
+#
+# pub15 = Publisher(q15_processed,
+#                 True,
+#                 "plot_q15_no_wrt.pdf",
+#                 "csv_q15_no_wrt.csv")
+# pub15.publish()
+#
+# pub13 = Publisher(q13_processed,
+#                 True,
+#                 "plot_q13_no_wrt.pdf",
+#                 "csv_q13_no_wrt.csv")
+#
+# pub13.publish()
 
 # Display:
 # ----------------------------------------------------------------------------------------------------------------------
