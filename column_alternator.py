@@ -17,6 +17,9 @@ class ColumnAlternator:
         for key, value in self.translate_dict.items():
             self.raw_df.loc[self.raw_df[self.column_to_alternate] == key, self.column_to_alternate] = value
 
-
+    def delete_unnecessary_rows(self):
+        for index, row in self.raw_df.iterrows():
+            if row.loc[self.column_to_alternate] not in self.translate_dict.values():
+                self.raw_df.drop(index, inplace=True)
 
 
