@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 from column_alternator import ColumnAlternator
-from publisher import Publisher
 
 Q_15_COLUMNS = slice(30, 39)
 Q_13_COLUMNS = slice(17, 29)
@@ -32,6 +30,11 @@ ALTERNATION_DICT_MODALITY_OF_CHOICE = {"דיאליזה צפקית": "PD",
                                        "המודיאליזה במוסד": "HEMO",
                                        "המודיאליזה ביתית": "HEMO",
                                        }
+
+ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL = {"דיאליזה צפקית": "PD",
+                                            "המודיאליזה במוסד": "HOSPITAL-HEMO",
+                                            "המודיאליזה ביתית": "HOME-HEMO",
+                                            }
 
 ALTERNATION_DICT_WORK_PLACE = {"בית חולים ציבורי, יחידת דיאליזה בקהילה": "There is a community dialysis unit",
                                "בית חולים ציבורי, יחידת דיאליזה בקהילה, מרפאה בקופת חולים": "There is a community dialysis unit",
@@ -200,12 +203,12 @@ def process_question_with_categorial(raw_data, question_columns: slice, categori
 #                                          "q13_wrt_work_place.csv")
 # pub13_wrt_work_place.publish()
 
-result_dict15 = process_question_with_categorial(raw_data, Q_15_COLUMNS, CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
-                                                 ALTERNATION_DICT_WORK_PLACE)
-result_df = pd.DataFrame(result_dict15, index=list(raw_data.columns[Q_15_COLUMNS]))
-pub15_wrt_work_place = Publisher(result_df, "q15_wrt_work_place_plot.pdf",
-                                         "q15_wrt_work_place.csv")
-pub15_wrt_work_place.publish()
+# result_dict15 = process_question_with_categorial(raw_data, Q_15_COLUMNS, CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
+#                                                  ALTERNATION_DICT_WORK_PLACE)
+# result_df = pd.DataFrame(result_dict15, index=list(raw_data.columns[Q_15_COLUMNS]))
+# pub15_wrt_work_place = Publisher(result_df, "q15_wrt_work_place_plot.pdf",
+#                                          "q15_wrt_work_place.csv")
+# pub15_wrt_work_place.publish()
 
 
 # Processing Q15 and Q13 only (can be un-comma if wants to go again)
@@ -226,41 +229,26 @@ pub15_wrt_work_place.publish()
 #
 # pub13.publish()
 
-# Display:
+# Processing Q17 (with modality you recommend) with respect to categories of q12 (do you treat PD)
 # ----------------------------------------------------------------------------------------------------------------------
-width = 0.3
-category_counter = 0
-# for category, data in result_dict.items():
-#     plt.bar(np.arange(len(data)) + width * category_counter, data, width=width)
-#     category_counter += 1
-# TODO:  Maybe ask for a user lables and titles?
-plt.ylabel('rates of 4/5 answer')
-plt.title('rates of 4/5 answer for has or doesn\'t have pd patients')
-xlabels = raw_data.columns.tolist()[Q_13_COLUMNS]
-xticks = np.arange(len(xlabels))
-plt.xticks(xticks, xlabels, color='orange', rotation=45, fontweight='bold',
-                 fontsize='10', horizontalalignment='right')
+q17_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE, ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL )
+q12_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS, ALTERNATION_DICT_TREAT_PD_PATIENTS)
+q17_alternator.alternate_df()
+q12_alternator.alternate_df()
+
+questions_of_interest = raw_data[[CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE]]
+grpby = questions_of_interest.groupby(CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS)
+res_dict = {}
+for key, item in grpby:
+    res_dict[key] = item.value_counts()
+
+res_df = pd.DataFrame(res_dict)
+ax = res_df.plot.bar()
 plt.tight_layout()
-
-#-------------legend:
-colors = {'Yes': 'blue', 'No': 'orange'}
-labels = list(colors.keys())
-handles = [plt.Rectangle((0,0),1,1, color=colors[label]) for label in labels]
-plt.legend(handles, labels)
-
-# Outputs:
-#plt.show() # For debug
-plt.savefig(r"C:\Users\Idan\Shira_survey\q_13_wrt_have_pd_patients.pdf")
-
-result_dict["Yes"] = result_dict.pop("כן")
-result_dict["No"] = result_dict.pop("לא")
-result_table = pd.DataFrame(result_dict, index=xlabels)
-result_table.plot.barh()
 plt.show()
 
-to_output = result_table.transpose(copy=True)
-to_output.set_axis(xlabels, axis=1, inplace=True)
-to_output.to_csv(r"C:\Users\Idan\Shira survey\q_13_wrt_have_pd_patients.csv")
+
+
 
 
 
