@@ -2,14 +2,19 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from column_alternator import ColumnAlternator
+from publisher import Publisher
 
+# Constants: # TODO: import all constants from a utility file
+# ----------
 Q_15_COLUMNS = slice(30, 39)
 Q_13_COLUMNS = slice(17, 29)
+
 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS = '12. Do you routinely treat PD patients '
 CATEGORIAL_COLUMN_LABEL_VINTAGE = "3.vintage"
 CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS = "7.Number of PD patients"
 CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE = "17. Your dialysis modality of choice"
 CATEGORIAL_COLUMN_LABEL_WORK_PLACE = "4.Work place"
+
 
 ALTERNATION_DICT_VINTAGE = {"מעל 15 שנים": "More then 15 years",
                             "1-5 שנים": "Less then 15 years",
@@ -18,7 +23,7 @@ ALTERNATION_DICT_VINTAGE = {"מעל 15 שנים": "More then 15 years",
                             }
 ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS = {"מעל 20": "More then 20",
                                           "11-20": "Less then 20",
-                                          "אין תכנית דיאליזה צפקית במוסד בו אני עובד"  : "Less then 20",
+                                          "אין תכנית דיאליזה צפקית במוסד בו אני עובד": "Less then 20",
                                           "1-10": "Less then 20",
                                           }
 
@@ -37,7 +42,8 @@ ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL = {"דיאליזה צפקית": "PD",
                                             }
 
 ALTERNATION_DICT_WORK_PLACE = {"בית חולים ציבורי, יחידת דיאליזה בקהילה": "There is a community dialysis unit",
-                               "בית חולים ציבורי, יחידת דיאליזה בקהילה, מרפאה בקופת חולים": "There is a community dialysis unit",
+                               "בית חולים ציבורי, יחידת דיאליזה בקהילה, מרפאה בקופת חולים":
+                                   "There is a community dialysis unit",
                                "יחידת דיאליזה בקהילה": "There is a community dialysis unit",
                                "יחידת דיאליזה בקהילה, מרפאה בקופת חולים": "There is a community dialysis unit",
                                "בית חולים ציבורי": "Public H without com. unit",
@@ -46,6 +52,7 @@ ALTERNATION_DICT_WORK_PLACE = {"בית חולים ציבורי, יחידת די�
 raw_data = pd.read_excel(r'C:\Users\Idan\Shira_survey\Data_headers_update_28_04_2022.xlsx')
 
 
+# The research statistic: how many 4 and 5 answers out of all answers:
 def process_4and5_votes(data: pd.DataFrame):
     rate_of_4_and_5_answers = []
     for column in data:
@@ -69,6 +76,7 @@ def get_rate_of_4and5s(column, relevant_data):
     return number_of_4_5_answers / number_of_all_answers
 
 
+# Helper function:
 def group_interest_data_frame_by_indicator_column(dataframe: pd.DataFrame,
                                                   interest_column: pd.Series,
                                                   columns_to_perform_on: list):
@@ -112,104 +120,113 @@ def process_question_with_categorial(raw_data, question_columns: slice, categori
     groupby_object = question_of_interest_df.groupby(by=categorial_column_name)
     result_dict = {}
     for key, item in groupby_object:
-        temp_df_item = item.drop(labels=[categorial_column_name], axis=1).reset_index().drop(labels='index',axis=1)
+        temp_df_item = item.drop(labels=[categorial_column_name], axis=1).reset_index().drop(labels='index', axis=1)
         result_dict[key] = [float(format(rate, ".2f"))*100 for rate in process_4and5_votes(temp_df_item)]
 
     return result_dict
+
+
+def process_and_publish_question_wrt(data: pd.DataFrame,
+                                     question_of_interest_columns: slice,
+                                     label_of_categorial_column: str,
+                                     alternation_dict_for_categorial_column: dict,
+                                     plot_name: str,
+                                     csv_name: str):
+
+    result_dict = process_question_with_categorial(data,
+                                                   question_of_interest_columns,
+                                                   label_of_categorial_column,
+                                                   alternation_dict_for_categorial_column)
+    result_df = pd.DataFrame(result_dict, index=list(data.columns[question_of_interest_columns]))
+    pub = Publisher(result_df, plot_name, csv_name)
+    pub.publish()
+
 
 # Here starts the usage for the data analysis:
 # ----------------------------------------------------------------------------------------------------------------------
 # Process Q13 and Q15 with categorials
 # ----------------------------------------------------------------------------------------------------------------------
 # 1st category: vintage (column 4)
-#---------------------------------
-# result_dict13 = process_question_with_categorial(raw_data,
-#                                                  Q_13_COLUMNS,
-#                                                  CATEGORIAL_COLUMN_LABEL_VINTAGE,
-#                                                  ALTERNATION_DICT_VINTAGE)
-# result_df = pd.DataFrame(result_dict13, index=list(raw_data.columns[Q_13_COLUMNS]))
-# pub13_wrt_vintage = Publisher(result_df, "q13_wrt_vintage_plot.pdf", "q13_wrt_vintage.csv")
-# pub13_wrt_vintage.publish()
+# ---------------------------------
+process_and_publish_question_wrt(raw_data,
+                                 Q_13_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_VINTAGE,
+                                 ALTERNATION_DICT_VINTAGE,
+                                 "q13_wrt_vintage_plot.pdf",
+                                 "q13_wrt_vintage.csv", )
 
-# result_dict15 = process_question_with_categorial(raw_data, Q_15_COLUMNS, CATEGORIAL_COLUMN_LABEL_VINTAGE,
-#                                                  ALTERNATION_DICT_VINTAGE)
-# result_df = pd.DataFrame(result_dict15, index=list(raw_data.columns[Q_15_COLUMNS]))
-# pub15_wrt_vintage = Publisher(result_df, "q15_wrt_vintage_plot.pdf", "q15_wrt_vintage.csv")
-# pub15_wrt_vintage.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_15_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_VINTAGE,
+                                 ALTERNATION_DICT_VINTAGE,
+                                 "q15_wrt_vintage_plot.pdf",
+                                 "q15_wrt_vintage.csv", )
 
 
 # 2st category: number of PD patients (column 4)
 # ---------------------------------
-# result_dict13 = process_question_with_categorial(raw_data,
-#                                                  Q_13_COLUMNS,
-#                                                  CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
-#                                                  ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS)
-# result_df = pd.DataFrame(result_dict13, index=list(raw_data.columns[Q_13_COLUMNS]))
-# pub13_wrt_number_of_pds = Publisher(result_df, "q13_wrt_number_of_pd_patients_plot.pdf",
-#                                     "q13_wrt_number_of_pd_patientse.csv")
-# pub13_wrt_number_of_pds.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_13_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
+                                 ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
+                                 "q13_wrt_number_of_pd_patients_plot.pdf",
+                                 "q13_wrt_number_of_pd_patients.csv")
 
-# result_dict15 = process_question_with_categorial(raw_data, Q_15_COLUMNS, CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
-#                                                  ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS)
-# result_df = pd.DataFrame(result_dict15, index=list(raw_data.columns[Q_15_COLUMNS]))
-# pub15_wrt_number_of_pd_patients = Publisher(result_df, "q15_wrt_wrt_number_of_pd_patients_plot.pdf",
-#                                             "q15_wrt_wrt_number_of_pd_patients.csv")
-# pub15_wrt_number_of_pd_patients.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_15_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
+                                 ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
+                                 "q15_wrt_number_of_pd_patients_plot.pdf",
+                                 "q15_wrt_number_of_pd_patients.csv")
+
 
 # 3rd category: Treats PD patients (column 12)
 # ---------------------------------
-# result_dict13 = process_question_with_categorial(raw_data,
-#                                                  Q_13_COLUMNS,
-#                                                  CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-#                                                  ALTERNATION_DICT_TREAT_PD_PATIENTS)
-# result_df = pd.DataFrame(result_dict13, index=list(raw_data.columns[Q_13_COLUMNS]))
-# pub13_wrt_treats_pds = Publisher(result_df, "q13_wrt_treats_pd_patients_plot.pdf",
-#                                  "q13_wrt_treats_pd_patients.csv")
-# pub13_wrt_treats_pds.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_13_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+                                 ALTERNATION_DICT_TREAT_PD_PATIENTS,
+                                 "q13_wrt_treats_pd_patients_plot.pdf",
+                                 "q13_wrt_treats_pd_patients.csv")
 
-# result_dict15 = process_question_with_categorial(raw_data, Q_15_COLUMNS, CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-#                                                  ALTERNATION_DICT_TREAT_PD_PATIENTS)
-# result_df = pd.DataFrame(result_dict15, index=list(raw_data.columns[Q_15_COLUMNS]))
-# pub15_wrt_wrt_treats_pds = Publisher(result_df, "q15_wrt_treats_pd_patients_plot.pdf",
-#                                      "q15_wrt_treats_pd_patients.csv")
-# pub15_wrt_wrt_treats_pds.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_15_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+                                 ALTERNATION_DICT_TREAT_PD_PATIENTS,
+                                 "q15_wrt_treats_pd_patients_plot.pdf",
+                                 "q15_wrt_treats_pd_patients.csv")
 
 # 4th category: Modality of choice (column 40, q17)
 # ---------------------------------
-# result_dict13 = process_question_with_categorial(raw_data,
-#                                                  Q_13_COLUMNS,
-#                                                  CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
-#                                                  ALTERNATION_DICT_MODALITY_OF_CHOICE)
-# result_df = pd.DataFrame(result_dict13, index=list(raw_data.columns[Q_13_COLUMNS]))
-# pub13_wrt_modality_of_choice = Publisher(result_df, "q13_wrt_modality_of_choice_plot.pdf",
-#                                          "q13_wrt_modality_of_choice.csv")
-# pub13_wrt_modality_of_choice.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_13_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
+                                 ALTERNATION_DICT_MODALITY_OF_CHOICE,
+                                 "q13_wrt_modality_of_choice_plot.pdf",
+                                 "q13_wrt_modality_of_choice.csv")
 
-# result_dict15 = process_question_with_categorial(raw_data, Q_15_COLUMNS, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
-#                                                  ALTERNATION_DICT_MODALITY_OF_CHOICE)
-# result_df = pd.DataFrame(result_dict15, index=list(raw_data.columns[Q_15_COLUMNS]))
-# pub15_wrt_modality_of_choice = Publisher(result_df, "q15_wrt_modality_of_choice_plot.pdf",
-#                                          "q15_wrt_modality_of_choice.csv")
-# pub15_wrt_modality_of_choice.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_15_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
+                                 ALTERNATION_DICT_MODALITY_OF_CHOICE,
+                                 "q15_wrt_modality_of_choice_plot.pdf",
+                                 "q15_wrt_modality_of_choice.csv")
 
 # 5th category: Work place (column 5)
 # ---------------------------------
-# result_dict13 = process_question_with_categorial(raw_data,
-#                                                  Q_13_COLUMNS,
-#                                                  CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
-#                                                  ALTERNATION_DICT_WORK_PLACE)
-# result_df = pd.DataFrame(result_dict13, index=list(raw_data.columns[Q_13_COLUMNS]))
-# pub13_wrt_work_place = Publisher(result_df, "q13_wrt_work_place_plot.pdf",
-#                                          "q13_wrt_work_place.csv")
-# pub13_wrt_work_place.publish()
+process_and_publish_question_wrt(raw_data,
+                                 Q_13_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
+                                 ALTERNATION_DICT_WORK_PLACE,
+                                 "q13_wrt_work_place_plot.pdf",
+                                 "q13_wrt_work_place.csv")
 
-# result_dict15 = process_question_with_categorial(raw_data, Q_15_COLUMNS, CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
-#                                                  ALTERNATION_DICT_WORK_PLACE)
-# result_df = pd.DataFrame(result_dict15, index=list(raw_data.columns[Q_15_COLUMNS]))
-# pub15_wrt_work_place = Publisher(result_df, "q15_wrt_work_place_plot.pdf",
-#                                          "q15_wrt_work_place.csv")
-# pub15_wrt_work_place.publish()
-
+process_and_publish_question_wrt(raw_data,
+                                 Q_15_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
+                                 ALTERNATION_DICT_WORK_PLACE,
+                                 "q15_wrt_work_place_plot.pdf",
+                                 "q15_wrt_work_place.csv")
 
 # Processing Q15 and Q13 only (can be un-comma if wants to go again)
 # ----------------------------------------------------------------------------------------------------------------------
@@ -231,12 +248,15 @@ def process_question_with_categorial(raw_data, question_columns: slice, categori
 
 # Processing Q17 (with modality you recommend) with respect to categories of q12 (do you treat PD)
 # ----------------------------------------------------------------------------------------------------------------------
-q17_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE, ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL )
-q12_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS, ALTERNATION_DICT_TREAT_PD_PATIENTS)
+q17_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
+                                  ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL )
+q12_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+                                  ALTERNATION_DICT_TREAT_PD_PATIENTS)
 q17_alternator.alternate_df()
 q12_alternator.alternate_df()
 
-questions_of_interest = raw_data[[CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE]]
+questions_of_interest = raw_data[[CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+                                  CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE]]
 grpby = questions_of_interest.groupby(CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS)
 res_dict = {}
 for key, item in grpby:
@@ -248,10 +268,3 @@ plt.tight_layout()
 plt.show()
 
 
-
-
-
-
-
-
-#
