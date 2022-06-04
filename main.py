@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from column_alternator import ColumnAlternator
@@ -10,10 +9,10 @@ Q_15_COLUMNS = slice(30, 39)
 Q_13_COLUMNS = slice(17, 29)
 
 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS = '12. Do you routinely treat PD patients '
-CATEGORIAL_COLUMN_LABEL_VINTAGE = "3.vintage"
-CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS = "7.Number of PD patients"
+CATEGORIAL_COLUMN_LABEL_VINTAGE = "3.	Duration of practice"
+CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS = "7.	PD patients #"
 CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE = "17. Your dialysis modality of choice"
-CATEGORIAL_COLUMN_LABEL_WORK_PLACE = "4.Work place"
+CATEGORIAL_COLUMN_LABEL_WORK_PLACE = "Work place"
 
 
 ALTERNATION_DICT_VINTAGE = {"מעל 15 שנים": "More then 15 years",
@@ -27,18 +26,18 @@ ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS = {"מעל 20": "More then 20",
                                           "1-10": "Less then 20",
                                           }
 
-ALTERNATION_DICT_TREAT_PD_PATIENTS = {"כן": "YES",
-                                      "לא": "NO",
+ALTERNATION_DICT_TREAT_PD_PATIENTS = {"כן": "Has Pd patients",
+                                      "לא": "Doesn't have Pd patients",
                                       }
 
-ALTERNATION_DICT_MODALITY_OF_CHOICE = {"דיאליזה צפקית": "PD",
-                                       "המודיאליזה במוסד": "HEMO",
-                                       "המודיאליזה ביתית": "HEMO",
+ALTERNATION_DICT_MODALITY_OF_CHOICE = {"דיאליזה צפקית": "Pd ",
+                                       "המודיאליזה במוסד": "Hemodialysis",
+                                       "המודיאליזה ביתית": "Hemodialysis",
                                        }
 
-ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL = {"דיאליזה צפקית": "PD",
-                                            "המודיאליזה במוסד": "HOSPITAL-HEMO",
-                                            "המודיאליזה ביתית": "HOME-HEMO",
+ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL = {"דיאליזה צפקית": "Pd ",
+                                            "המודיאליזה במוסד": "Hemodialysis",
+                                            "המודיאליזה ביתית": "Home hemo",
                                             }
 
 ALTERNATION_DICT_WORK_PLACE = {"בית חולים ציבורי, יחידת דיאליזה בקהילה": "There is a community dialysis unit",
@@ -49,8 +48,8 @@ ALTERNATION_DICT_WORK_PLACE = {"בית חולים ציבורי, יחידת די�
                                "בית חולים ציבורי": "Public H without com. unit",
                                "בית חולים ציבורי, מרפאה בקופת חולים": "Public H without com. unit",
                                }
-raw_data = pd.read_excel(r'C:\Users\Idan\Shira_survey\Data_headers_update_28_04_2022.xlsx')
-
+#raw_data = pd.read_excel(r'C:\Users\Idan\Shira_survey\Data_headers_update_28_04_2022.xlsx')
+raw_data = pd.read_excel(r'C:\Users\Idan\Shira_survey\Survey_29_05_2022.xlsx')
 
 # The research statistic: how many 4 and 5 answers out of all answers:
 def process_4and5_votes(data: pd.DataFrame):
@@ -139,7 +138,9 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
                                                    alternation_dict_for_categorial_column)
     result_df = pd.DataFrame(result_dict, index=list(data.columns[question_of_interest_columns]))
     pub = Publisher(result_df, plot_name, csv_name)
-    pub.publish()
+    #pub.publish()
+    pub.publish_black_n_white(color=["black", "gray"])
+
 
 
 # Here starts the usage for the data analysis:
@@ -147,124 +148,129 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 # Process Q13 and Q15 with categorials
 # ----------------------------------------------------------------------------------------------------------------------
 # 1st category: vintage (column 4)
+#---------------------------------
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_13_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_VINTAGE,
+#                                  ALTERNATION_DICT_VINTAGE,
+#                                  "q13_wrt_vintage_plot.pdf",
+#                                  "q13_wrt_vintage.csv", )
+#
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_15_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_VINTAGE,
+#                                  ALTERNATION_DICT_VINTAGE,
+#                                  "q15_wrt_vintage_plot.pdf",
+#                                  "q15_wrt_vintage.csv", )
+
+
+# 2st category: number of PD patients (column 4) - needed
 # ---------------------------------
-process_and_publish_question_wrt(raw_data,
-                                 Q_13_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_VINTAGE,
-                                 ALTERNATION_DICT_VINTAGE,
-                                 "q13_wrt_vintage_plot.pdf",
-                                 "q13_wrt_vintage.csv", )
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_13_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
+#                                  ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
+#                                  "q13_wrt_number_of_pd_patients_plot.pdf",
+#                                  "q13_wrt_number_of_pd_patients.csv")
+#
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_15_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
+#                                  ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
+#                                  "q15_wrt_number_of_pd_patients_plot.pdf",
+#                                  "q15_wrt_number_of_pd_patients.csv")
 
-process_and_publish_question_wrt(raw_data,
-                                 Q_15_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_VINTAGE,
-                                 ALTERNATION_DICT_VINTAGE,
-                                 "q15_wrt_vintage_plot.pdf",
-                                 "q15_wrt_vintage.csv", )
 
-
-# 2st category: number of PD patients (column 4)
+# 3rd category: Treats PD patients (column 12) - needed
 # ---------------------------------
-process_and_publish_question_wrt(raw_data,
-                                 Q_13_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
-                                 ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
-                                 "q13_wrt_number_of_pd_patients_plot.pdf",
-                                 "q13_wrt_number_of_pd_patients.csv")
-
-process_and_publish_question_wrt(raw_data,
-                                 Q_15_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
-                                 ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
-                                 "q15_wrt_number_of_pd_patients_plot.pdf",
-                                 "q15_wrt_number_of_pd_patients.csv")
-
-
-# 3rd category: Treats PD patients (column 12)
-# ---------------------------------
-process_and_publish_question_wrt(raw_data,
-                                 Q_13_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-                                 ALTERNATION_DICT_TREAT_PD_PATIENTS,
-                                 "q13_wrt_treats_pd_patients_plot.pdf",
-                                 "q13_wrt_treats_pd_patients.csv")
-
-process_and_publish_question_wrt(raw_data,
-                                 Q_15_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-                                 ALTERNATION_DICT_TREAT_PD_PATIENTS,
-                                 "q15_wrt_treats_pd_patients_plot.pdf",
-                                 "q15_wrt_treats_pd_patients.csv")
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_13_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+#                                  ALTERNATION_DICT_TREAT_PD_PATIENTS,
+#                                  "q13_wrt_treats_pd_patients_plot.pdf",
+#                                  "q13_wrt_treats_pd_patients.csv")
+#
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_15_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+#                                  ALTERNATION_DICT_TREAT_PD_PATIENTS,
+#                                  "q15_wrt_treats_pd_patients_plot.pdf",
+#                                  "q15_wrt_treats_pd_patients.csv")
 
 # 4th category: Modality of choice (column 40, q17)
 # ---------------------------------
-process_and_publish_question_wrt(raw_data,
-                                 Q_13_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
-                                 ALTERNATION_DICT_MODALITY_OF_CHOICE,
-                                 "q13_wrt_modality_of_choice_plot.pdf",
-                                 "q13_wrt_modality_of_choice.csv")
-
-process_and_publish_question_wrt(raw_data,
-                                 Q_15_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
-                                 ALTERNATION_DICT_MODALITY_OF_CHOICE,
-                                 "q15_wrt_modality_of_choice_plot.pdf",
-                                 "q15_wrt_modality_of_choice.csv")
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_13_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
+#                                  ALTERNATION_DICT_MODALITY_OF_CHOICE,
+#                                  "q13_wrt_modality_of_choice_plot.pdf",
+#                                  "q13_wrt_modality_of_choice.csv")
+#
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_15_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
+#                                  ALTERNATION_DICT_MODALITY_OF_CHOICE,
+#                                  "q15_wrt_modality_of_choice_plot.pdf",
+#                                  "q15_wrt_modality_of_choice.csv")
 
 # 5th category: Work place (column 5)
 # ---------------------------------
-process_and_publish_question_wrt(raw_data,
-                                 Q_13_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
-                                 ALTERNATION_DICT_WORK_PLACE,
-                                 "q13_wrt_work_place_plot.pdf",
-                                 "q13_wrt_work_place.csv")
-
-process_and_publish_question_wrt(raw_data,
-                                 Q_15_COLUMNS,
-                                 CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
-                                 ALTERNATION_DICT_WORK_PLACE,
-                                 "q15_wrt_work_place_plot.pdf",
-                                 "q15_wrt_work_place.csv")
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_13_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
+#                                  ALTERNATION_DICT_WORK_PLACE,
+#                                  "q13_wrt_work_place_plot.pdf",
+#                                  "q13_wrt_work_place.csv")
+#
+# process_and_publish_question_wrt(raw_data,
+#                                  Q_15_COLUMNS,
+#                                  CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
+#                                  ALTERNATION_DICT_WORK_PLACE,
+#                                  "q15_wrt_work_place_plot.pdf",
+#                                  "q15_wrt_work_place.csv")
 
 # Processing Q15 and Q13 only (can be un-comma if wants to go again)
 # ----------------------------------------------------------------------------------------------------------------------
-# q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, True)
+q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, False)
 # q13_processed = process_question_with_no_categorial(raw_data, Q_13_COLUMNS, False)
 #
-# pub15 = Publisher(q15_processed,
-#                 True,
-#                 "plot_q15_no_wrt.pdf",
-#                 "csv_q15_no_wrt.csv")
-# pub15.publish()
+pub15 = Publisher(q15_processed,
+                  "plot_q15_no_wrt.pdf",
+                  "csv_q15_no_wrt.csv")
+# #pub15.publish()
+pub15.publish_black_n_white(color = "#009999")
 #
 # pub13 = Publisher(q13_processed,
-#                 True,
-#                 "plot_q13_no_wrt.pdf",
-#                 "csv_q13_no_wrt.csv")
+#                   "plot_q13_no_wrt.pdf",
+#                   "csv_q13_no_wrt.csv")
 #
-# pub13.publish()
+# #pub13.publish()
+# pub13.publish_black_n_white(color = "#009999")
 
 # Processing Q17 (with modality you recommend) with respect to categories of q12 (do you treat PD)
 # ----------------------------------------------------------------------------------------------------------------------
-q17_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
-                                  ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL )
-q12_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-                                  ALTERNATION_DICT_TREAT_PD_PATIENTS)
-q17_alternator.alternate_df()
-q12_alternator.alternate_df()
-
-questions_of_interest = raw_data[[CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-                                  CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE]]
-grpby = questions_of_interest.groupby(CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS)
-res_dict = {}
-for key, item in grpby:
-    res_dict[key] = item.value_counts()
-
-res_df = pd.DataFrame(res_dict)
-ax = res_df.plot.bar()
-plt.tight_layout()
-plt.show()
+# q17_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
+#                                   ALTERNATION_DICT_MODALITY_OF_CHOICE_FULL )
+# q12_alternator = ColumnAlternator(raw_data, CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+#                                   ALTERNATION_DICT_TREAT_PD_PATIENTS)
+# q17_alternator.alternate_df()
+# q12_alternator.alternate_df()
+#
+# questions_of_interest = raw_data[[CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+#                                   CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE]]
+# grpby = questions_of_interest.groupby(CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS)
+# res_dict = {}
+# for key, item in grpby:
+#     temp_df_item = item.drop(labels=[CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS], axis=1).reset_index().drop(labels='index', axis=1)
+#     res_dict[key] = (temp_df_item.value_counts()/len(temp_df_item)*100).astype(int)
+#
+# res_df = pd.DataFrame(res_dict).reset_index()
+# res_df["Index"] = ["Hemodialysis", "Home hemo", "Pd"]
+# res_df.set_index("Index", inplace=True)
+# res_df.drop(labels=CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE, axis=1, inplace=True)
+# ax = res_df.plot.bar(title="Chosen dialysis modality by has Pd patients", ylabel="%")
+# plt.title = "Chosen dialysis modality by has Pd patients"
+# plt.tight_layout()
+# plt.show()
 
 
