@@ -139,8 +139,7 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
     result_df = pd.DataFrame(result_dict, index=list(data.columns[question_of_interest_columns]))
     pub = Publisher(result_df, plot_name, csv_name)
     #pub.publish()
-    pub.publish_black_n_white(color=["black", "gray"])
-
+    pub.publish_black_n_white(color=["#3D3939", "#807979"])
 
 
 # Here starts the usage for the data analysis:
@@ -163,7 +162,6 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 #                                  "q15_wrt_vintage_plot.pdf",
 #                                  "q15_wrt_vintage.csv", )
 
-
 # 2st category: number of PD patients (column 4) - needed
 # ---------------------------------
 # process_and_publish_question_wrt(raw_data,
@@ -172,7 +170,7 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 #                                  ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
 #                                  "q13_wrt_number_of_pd_patients_plot.pdf",
 #                                  "q13_wrt_number_of_pd_patients.csv")
-#
+
 # process_and_publish_question_wrt(raw_data,
 #                                  Q_15_COLUMNS,
 #                                  CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
@@ -183,19 +181,19 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 
 # 3rd category: Treats PD patients (column 12) - needed
 # ---------------------------------
-# process_and_publish_question_wrt(raw_data,
-#                                  Q_13_COLUMNS,
-#                                  CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-#                                  ALTERNATION_DICT_TREAT_PD_PATIENTS,
-#                                  "q13_wrt_treats_pd_patients_plot.pdf",
-#                                  "q13_wrt_treats_pd_patients.csv")
-#
-# process_and_publish_question_wrt(raw_data,
-#                                  Q_15_COLUMNS,
-#                                  CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
-#                                  ALTERNATION_DICT_TREAT_PD_PATIENTS,
-#                                  "q15_wrt_treats_pd_patients_plot.pdf",
-#                                  "q15_wrt_treats_pd_patients.csv")
+process_and_publish_question_wrt(raw_data,
+                                 Q_13_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+                                 ALTERNATION_DICT_TREAT_PD_PATIENTS,
+                                 "q13_wrt_treats_pd_patients_plot.pdf",
+                                 "q13_wrt_treats_pd_patients.csv")
+
+process_and_publish_question_wrt(raw_data,
+                                 Q_15_COLUMNS,
+                                 CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
+                                 ALTERNATION_DICT_TREAT_PD_PATIENTS,
+                                 "q15_wrt_treats_pd_patients_plot.pdf",
+                                 "q15_wrt_treats_pd_patients.csv")
 
 # 4th category: Modality of choice (column 40, q17)
 # ---------------------------------
@@ -231,14 +229,14 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 
 # Processing Q15 and Q13 only (can be un-comma if wants to go again)
 # ----------------------------------------------------------------------------------------------------------------------
-q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, False)
+# q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, False)
 # q13_processed = process_question_with_no_categorial(raw_data, Q_13_COLUMNS, False)
 #
-pub15 = Publisher(q15_processed,
-                  "plot_q15_no_wrt.pdf",
-                  "csv_q15_no_wrt.csv")
+#pub15 = Publisher(q15_processed,
+                  # "plot_q15_no_wrt.pdf",
+                  # "csv_q15_no_wrt.csv")
 # #pub15.publish()
-pub15.publish_black_n_white(color = "#009999")
+#pub15.publish_black_n_white(color = "#009999")
 #
 # pub13 = Publisher(q13_processed,
 #                   "plot_q13_no_wrt.pdf",

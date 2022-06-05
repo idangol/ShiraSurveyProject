@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 #plt.style.use('grayscale')
 
 import pandas as pd
@@ -7,10 +8,8 @@ import pandas as pd
 class Publisher:
 
     PATH = "C:\\Users\\Idan\\Shira_survey"
-    XLABEL = "% of significant answers (4\\5)"
-    YLABEL_FONT = {'family' : 'sans-serif',
-        'weight' : 'bold',
-        'size'   : 14}
+    XLABEL = "Percentage of significant answers (4\\5)"
+
 
 
 
@@ -42,11 +41,20 @@ class Publisher:
         csfont = {'size': 12, 'weight': "bold"}
         plt.xlabel('ylabel', **csfont)
 
-        # Plot data
         index = self.data.index.tolist()
-        value = self.data[0].tolist()
+        if self.data.shape[1] > 1:
+            # Plot data
+            first_column_as_list = self.data.iloc[:, 0].tolist()
+            second_column_as_list = self.data.iloc[:, 1].tolist()
+            y_tic_locations = np.arange(len(first_column_as_list))
+            bars1 = plt.barh(y_tic_locations + 0.2, first_column_as_list, height=0.4, color=color[0])
+            bars2 = plt.barh(y_tic_locations - 0.2, second_column_as_list, height=0.4, color=color[1])
+            plt.legend([bars1, bars2], [self.data.columns.values.tolist()[0], self.data.columns.values.tolist()[1]])
+            plt.yticks(ticks=y_tic_locations, labels=index)
 
-        plt.barh(index, value, align='center', color=color)
+        else:
+            plt.barh(index, self.data[0], color=color)
+
         plt.xlabel(self.XLABEL)
         plt.xticks(ticks=[25, 50, 75, 100], labels=["25%", "50%", "75%", "100%"])
 
