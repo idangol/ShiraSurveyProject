@@ -8,7 +8,7 @@ import pandas as pd
 class Publisher:
 
     PATH = "C:\\Users\\Idan\\Shira_survey"
-    XLABEL = "Percentage of significant answers (4\\5)"
+    XLABEL = "Percentage of significant answers"
 
 
 

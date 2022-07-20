@@ -87,7 +87,7 @@ def group_interest_data_frame_by_indicator_column(dataframe: pd.DataFrame,
     return relevant_question_data.groupby(interest_column.name)
 
 
-def process_question_with_no_categorial(raw_data, question_columns: slice, break_long_descriptors_section):
+def process_question_with_no_categorial(raw_data, question_columns: slice, break_long_descriptors_section, df_file: str):
     question_of_interest_columns = list(raw_data.columns[question_columns])
     question_of_interest_df = raw_data[question_of_interest_columns]
     modified_index = question_of_interest_columns
@@ -100,8 +100,12 @@ def process_question_with_no_categorial(raw_data, question_columns: slice, break
         # For better printing results, add \n for long descriptor:
         modified_index[4] = "15e. Fear that their chance of getting a transplant\n is reduced by being on PD"
 
-    q15_df = pd.DataFrame(rates_for_requested_question, index=modified_index)
-    return q15_df
+    q_df = pd.DataFrame(rates_for_requested_question, index=modified_index)
+    # save it in order to use it for sorting the wrt question with the same column order
+    q_df.to_csv(df_file)
+    # sort by rates:
+    q_df.sort_values(by=[0], inplace=True)
+    return q_df
 
 
 def process_question_with_categorial(raw_data, question_columns: slice, categorial_column_name: str, alternation_dict):
@@ -130,13 +134,22 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
                                      label_of_categorial_column: str,
                                      alternation_dict_for_categorial_column: dict,
                                      plot_name: str,
-                                     csv_name: str):
+                                     csv_name: str,
+                                     ordered_info_df: str):
 
     result_dict = process_question_with_categorial(data,
                                                    question_of_interest_columns,
                                                    label_of_categorial_column,
                                                    alternation_dict_for_categorial_column)
     result_df = pd.DataFrame(result_dict, index=list(data.columns[question_of_interest_columns]))
+
+    # Shire requested the order of the bars the same as in the with no respect to questions:
+    uploaded_ordering_df = pd.read_csv(ordered_info_df)
+    uploaded_ordering_df.index = result_df.index
+    result_df["sortby"] = uploaded_ordering_df["0"]
+    result_df.sort_values(by=["sortby"], inplace=True)
+    result_df.drop(["sortby"], axis=1, inplace=True)
+
     pub = Publisher(result_df, plot_name, csv_name)
     #pub.publish()
     pub.publish_black_n_white(color=["#363636", "#A4A4A4"], add_bar_labels=False)
@@ -153,14 +166,16 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 #                                  CATEGORIAL_COLUMN_LABEL_VINTAGE,
 #                                  ALTERNATION_DICT_VINTAGE,
 #                                  "q13_wrt_vintage_plot.pdf",
-#                                  "q13_wrt_vintage.csv", )
+#                                  "q13_wrt_vintage.csv",
+#                                  "q_13_unordered.csv",)
 #
 # process_and_publish_question_wrt(raw_data,
 #                                  Q_15_COLUMNS,
 #                                  CATEGORIAL_COLUMN_LABEL_VINTAGE,
 #                                  ALTERNATION_DICT_VINTAGE,
 #                                  "q15_wrt_vintage_plot.pdf",
-#                                  "q15_wrt_vintage.csv", )
+#                                  "q15_wrt_vintage.csv",
+#                                  "q_15_unordered.csv")
 
 # 2st category: number of PD patients (column 4) - needed
 # ---------------------------------
@@ -169,14 +184,16 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 #                                  CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
 #                                  ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
 #                                  "q13_wrt_number_of_pd_patients_plot.pdf",
-#                                  "q13_wrt_number_of_pd_patients.csv")
+#                                  "q13_wrt_number_of_pd_patients.csv",
+#                                  "q_13_unordered.csv")
 #
 # process_and_publish_question_wrt(raw_data,
 #                                  Q_15_COLUMNS,
 #                                  CATEGORIAL_COLUMN_LABEL_NUMBER_OF_PD_PATIENTS,
 #                                  ALTERNATION_DICT_NUMBER_OF_PD_PATIENTS,
 #                                  "q15_wrt_number_of_pd_patients_plot.pdf",
-#                                  "q15_wrt_number_of_pd_patients.csv")
+#                                  "q15_wrt_number_of_pd_patients.csv",
+#                                  "q_15_unordered.csv")
 
 
 # 3rd category: Treats PD patients (column 12) - needed
@@ -186,14 +203,16 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 #                                  CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
 #                                  ALTERNATION_DICT_TREAT_PD_PATIENTS,
 #                                  "q13_wrt_treats_pd_patients_plot.pdf",
-#                                  "q13_wrt_treats_pd_patients.csv")
+#                                  "q13_wrt_treats_pd_patients.csv",
+#                                  "q_13_unordered.csv")
 #
 # process_and_publish_question_wrt(raw_data,
 #                                  Q_15_COLUMNS,
 #                                  CATEGORIAL_COLUMN_LABEL_TREAT_PD_PATIENTS,
 #                                  ALTERNATION_DICT_TREAT_PD_PATIENTS,
 #                                  "q15_wrt_treats_pd_patients_plot.pdf",
-#                                  "q15_wrt_treats_pd_patients.csv")
+#                                  "q15_wrt_treats_pd_patients.csv",
+#                                  "q_15_unordered.csv")
 
 # 4th category: Modality of choice (column 40, q17)
 # ---------------------------------
@@ -202,14 +221,16 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 #                                  CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
 #                                  ALTERNATION_DICT_MODALITY_OF_CHOICE,
 #                                  "q13_wrt_modality_of_choice_plot.pdf",
-#                                  "q13_wrt_modality_of_choice.csv")
+#                                  "q13_wrt_modality_of_choice.csv",
+#                                  "q_13_unordered.csv")
 #
 # process_and_publish_question_wrt(raw_data,
 #                                  Q_15_COLUMNS,
 #                                  CATEGORIAL_COLUMN_LABEL_MODALITY_OF_CHOICE,
 #                                  ALTERNATION_DICT_MODALITY_OF_CHOICE,
 #                                  "q15_wrt_modality_of_choice_plot.pdf",
-#                                  "q15_wrt_modality_of_choice.csv")
+#                                  "q15_wrt_modality_of_choice.csv",
+#                                  "q_15_unordered.csv")
 
 # 5th category: Work place (column 5)
 # ---------------------------------
@@ -218,34 +239,35 @@ def process_and_publish_question_wrt(data: pd.DataFrame,
 #                                  CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
 #                                  ALTERNATION_DICT_WORK_PLACE,
 #                                  "q13_wrt_work_place_plot.pdf",
-#                                  "q13_wrt_work_place.csv")
+#                                  "q13_wrt_work_place.csv",
+#                                  "q_13_unordered.csv")
 #
 # process_and_publish_question_wrt(raw_data,
 #                                  Q_15_COLUMNS,
 #                                  CATEGORIAL_COLUMN_LABEL_WORK_PLACE,
 #                                  ALTERNATION_DICT_WORK_PLACE,
 #                                  "q15_wrt_work_place_plot.pdf",
-#                                  "q15_wrt_work_place.csv")
+#                                  "q15_wrt_work_place.csv",
+#                                  "q_15_unordered.csv")
 
 # Processing Q15 and Q13 only (can be un-comma if wants to go again)
 # ----------------------------------------------------------------------------------------------------------------------
-#q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, False)
-#q13_processed = process_question_with_no_categorial(raw_data, Q_13_COLUMNS, False)
-
-#pub15 = Publisher(q15_processed,
+# q15_processed = process_question_with_no_categorial(raw_data, Q_15_COLUMNS, False, "q_15_unordered.csv")
+# q13_processed = process_question_with_no_categorial(raw_data, Q_13_COLUMNS, False, "q_13_unordered.csv")
+#
+# pub15 = Publisher(q15_processed,
 #                  "plot_q15_no_wrt.pdf",
 #                  "csv_q15_no_wrt.csv")
-# #pub15.publish()
-#pub15.publish_black_n_white(color = "#009999", True)
-#pub15.publish_black_n_white(color = "#919191", True)
+
+# pub15.publish_black_n_white(color = "#009999", add_bar_labels=True)
+# pub15.publish_black_n_white(color = "#919191", add_bar_labels=True)
 #
-#pub13 = Publisher(q13_processed,
+# pub13 = Publisher(q13_processed,
 #                  "plot_q13_no_wrt.pdf",
 #                  "csv_q13_no_wrt.csv")
 
-# #pub13.publish()
-#pub13.publish_black_n_white(color = "#009999", True)
-#pub13.publish_black_n_white(color = "#919191", True)
+#pub13.publish_black_n_white(color = "#009999", add_bar_labels=True)
+# pub13.publish_black_n_white(color = "#919191", add_bar_labels=True)
 
 # Processing Q17 (with modality you recommend) with respect to categories of q12 (do you treat PD)
 # ----------------------------------------------------------------------------------------------------------------------
